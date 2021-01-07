@@ -1,10 +1,12 @@
 package com.bkav.mediamusic.view.fragment;
 
+import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AllsongsFragment extends Fragment {
     private RecyclerView lvListMusic;
@@ -46,20 +49,30 @@ public class AllsongsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         addControls(view);
-
+        addEvents();
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void addEvents() {
+        lvListMusic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BottomSheetFragment mBSF = new BottomSheetFragment();
+                mBSF.show(getChildFragmentManager(),"BottomSheet");
+            }
+        });
     }
 
     private void addControls(View view) {
         lvListMusic = view.findViewById(R.id.lvListMusic);
         mMusicList.clear();
         mMusicList.addAll(getListMusic());
-//        Collections.sort(mMusicList, new Comparator<Music>() {
-//            @Override
-//            public int compare(Music music, Music t1) {
-//                return music.getName().compareTo(t1.getName());
-//            }
-//        });
+        Collections.sort(mMusicList, new Comparator<Music>() {
+            @Override
+            public int compare(Music music, Music t1) {
+                return music.getName().compareTo(t1.getName());
+            }
+        });
         LinearLayoutManager mllm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         lvListMusic.setLayoutManager(mllm);
         lvListMusic.setHasFixedSize(true);
@@ -75,12 +88,49 @@ public class AllsongsFragment extends Fragment {
         }
         MediaPlayer mMediaPlayer = new MediaPlayer();
         try {
-            for (int i = 0; i < mFile.size(); i++) {
-                try {
-                    mMediaPlayer.setDataSource(mFile.get(i).getAbsolutePath());
-                    mTemp.add(new Music(mFile.get(i).getName(), "", mMediaPlayer.getDuration(),mFile.get(i).getAbsolutePath()));
-                } catch (IOException e) {
-                    Log.e(TAG, "" + e);
+            if(Build.VERSION.SDK_INT<Build.VERSION_CODES.Q) {
+                for (int i = 0; i < mFile.size(); i++) {
+                    try {
+                        mMediaPlayer.setDataSource(mFile.get(i).getAbsolutePath());
+                        mMediaPlayer.prepare();
+                        mTemp.add(new Music(mFile.get(i).getName(), "", mMediaPlayer.getDuration(), mFile.get(i).getAbsolutePath()));
+                        mMediaPlayer.reset();
+                    } catch (IOException e) {
+                        Log.e(TAG, "" + e);
+                    }
+                }
+            }
+            else {
+                String[] projection = new String[] {
+                        MediaStore.Video.Media._ID,
+                        MediaStore.Video.Media.AUTHOR,
+                        MediaStore.Video.Media.DISPLAY_NAME,
+                        MediaStore.Video.Media.DURATION,
+                        MediaStore.Video.Media.RELATIVE_PATH
+                };
+                String selection = MediaStore.Video.Media.DURATION +
+                        " >= ?";
+                String[] selectionArgs = new String[] {
+                        String.valueOf(TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES))
+                };
+                String sortOrder = MediaStore.Video.Media.DISPLAY_NAME + " ASC";;
+
+                Cursor cursor = getContext().getContentResolver().query(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        sortOrder
+                );
+
+                while (cursor.moveToNext()) {
+                    // Use an ID column from the projection to get
+                    // a URI representing the media item itself.
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME));
+                    String author = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.AUTHOR));
+                    long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
+                    String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.RELATIVE_PATH));
+                    mMusicList.add(new Music(name,author,duration,path));
                 }
             }
         } catch (Exception e) {
@@ -91,13 +141,15 @@ public class AllsongsFragment extends Fragment {
 
     //Lấy file .mp3 tr máy
     private void getFileMusic(File file) {
-        File[] files = file.listFiles();
-        for (File f : files) {
-            if (f.isDirectory()) {
-                getFileMusic(f);
-            } else {
-                if (f.getName().endsWith(".mp3")) {
-                    mFile.add(f);
+        if(Build.VERSION.SDK_INT<Build.VERSION_CODES.Q) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    getFileMusic(f);
+                } else {
+                    if (f.getName().endsWith(".mp3")) {
+                        mFile.add(f);
+                    }
                 }
             }
         }

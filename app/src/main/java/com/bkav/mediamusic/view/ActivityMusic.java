@@ -7,6 +7,7 @@ import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -81,9 +82,9 @@ public class ActivityMusic extends AppCompatActivity implements IGetPlayMusic {
     }
 
     @Override
-    public void getData(Music music) {
+    public void getData(Context mContext, Music mMusic) {
         System.out.println("has been click at position");
-        if (!music.getName().equals("")) {
+        if (!mMusic.getName().equals("")) {
             if (mBottomSheetBehavior.getState() != mBottomSheetBehavior.STATE_EXPANDED) {
                 mBottomSheetBehavior.setState(mBottomSheetBehavior.STATE_EXPANDED);
             } else {
