@@ -2,50 +2,63 @@ package com.bkav.mediamusic.view;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.bkav.mediamusic.IChangeFragment;
 import com.bkav.mediamusic.IGetPlayMusic;
 import com.bkav.mediamusic.R;
 import com.bkav.mediamusic.adapter.ListMusicAdapter;
 import com.bkav.mediamusic.model.Music;
 import com.bkav.mediamusic.view.fragment.AllsongsFragment;
+import com.bkav.mediamusic.view.fragment.MediaPlaybackFragment;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-public class ActivityMusic extends AppCompatActivity implements IGetPlayMusic {
+public class ActivityMusic extends AppCompatActivity implements ListMusicAdapter.IGetData {
     private final int REQUEST_CODE = 1;
-    private LinearLayout mLayoutBottomSheet;
-    private BottomSheetBehavior mBottomSheetBehavior;
-
+//    private LinearLayout mLayoutBottomSheet;
+//    private BottomSheetBehavior mBottomSheetBehavior;
+    private TextView txtNameBottom,txtAuthorBottom;
+    private CardView cvInfomation;
+    private ImageButton btnPlay;
+    private boolean isPlay = false;
+    private Music mMusic;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         requestPermissions();
         getSupportFragmentManager().beginTransaction().add(R.id.container, new AllsongsFragment()).commit();
-        FragmentManager fm = getFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
         addControls();
-        addEvents();
     }
 
-    private void addEvents() {
-    }
 
     private void addControls() {
-        mLayoutBottomSheet = findViewById(R.id.bottom_sheet_layout);
-        mBottomSheetBehavior = BottomSheetBehavior.from(mLayoutBottomSheet);
+//        mLayoutBottomSheet = findViewById(R.id.bottom_sheet_layout);
+//        mBottomSheetBehavior = BottomSheetBehavior.from(mLayoutBottomSheet);
+        txtNameBottom = findViewById(R.id.txtNameBottom);
+        txtAuthorBottom = findViewById(R.id.txtAuthorBottom);
+        cvInfomation = findViewById(R.id.cvInfomation);
+        btnPlay = findViewById(R.id.btnPlayBottom);
+        cvInfomation = findViewById(R.id.cvInfomation);
+        txtNameBottom.setText("");
     }
 
     @Override
@@ -64,16 +77,14 @@ public class ActivityMusic extends AppCompatActivity implements IGetPlayMusic {
     }
 
     private void requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
-            } else
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
-            if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        } else
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+        if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
-            } else
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-        }
+        } else
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
     }
 
     @Override
@@ -82,32 +93,16 @@ public class ActivityMusic extends AppCompatActivity implements IGetPlayMusic {
     }
 
     @Override
-    public void getData(Context mContext, Music mMusic) {
-        System.out.println("has been click at position");
-        if (!mMusic.getName().equals("")) {
-            if (mBottomSheetBehavior.getState() != mBottomSheetBehavior.STATE_EXPANDED) {
-                mBottomSheetBehavior.setState(mBottomSheetBehavior.STATE_EXPANDED);
-            } else {
-                mBottomSheetBehavior.setState(mBottomSheetBehavior.STATE_COLLAPSED);
-            }
-        }
-        mBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+    public void getData(Music mMusic) {
+        txtNameBottom.setText(mMusic.getName());
+//        if (mMusic.getAuthor().equals("")){
+//            txtAuthorBottom.setText("");
+//        } else txtAuthorBottom.setText(mMusic.getAuthor());
+        cvInfomation.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                switch (newState){
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        break;
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, new MediaPlaybackFragment()).commit();
             }
         });
-
     }
-
 }

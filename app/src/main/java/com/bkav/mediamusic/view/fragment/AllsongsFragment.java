@@ -1,5 +1,6 @@
 package com.bkav.mediamusic.view.fragment;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,8 +38,13 @@ public class AllsongsFragment extends Fragment {
     private List<File> mFile = new ArrayList<>();
     private ListMusicAdapter listMusicAdapter;
     private final String TAG = "AllSongsFragment";
-    
+
     public AllsongsFragment() {
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
     }
 
     @Nullable
@@ -58,7 +65,7 @@ public class AllsongsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 BottomSheetFragment mBSF = new BottomSheetFragment();
-                mBSF.show(getChildFragmentManager(),"BottomSheet");
+                mBSF.show(getChildFragmentManager(), "BottomSheet");
             }
         });
     }
@@ -88,7 +95,7 @@ public class AllsongsFragment extends Fragment {
         }
         MediaPlayer mMediaPlayer = new MediaPlayer();
         try {
-            if(Build.VERSION.SDK_INT<Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 for (int i = 0; i < mFile.size(); i++) {
                     try {
                         mMediaPlayer.setDataSource(mFile.get(i).getAbsolutePath());
@@ -99,24 +106,24 @@ public class AllsongsFragment extends Fragment {
                         Log.e(TAG, "" + e);
                     }
                 }
-            }
-            else {
-                String[] projection = new String[] {
-                        MediaStore.Video.Media._ID,
-                        MediaStore.Video.Media.AUTHOR,
-                        MediaStore.Video.Media.DISPLAY_NAME,
-                        MediaStore.Video.Media.DURATION,
-                        MediaStore.Video.Media.RELATIVE_PATH
+            } else {
+                String[] projection = new String[]{
+                        MediaStore.Audio.Media._ID,
+                        MediaStore.Audio.Media.AUTHOR,
+                        MediaStore.Audio.Media.DISPLAY_NAME,
+                        MediaStore.Audio.Media.DURATION,
+                        MediaStore.Audio.Media.RELATIVE_PATH
                 };
                 String selection = MediaStore.Video.Media.DURATION +
                         " >= ?";
-                String[] selectionArgs = new String[] {
-                        String.valueOf(TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES))
+                String[] selectionArgs = new String[]{
+                        String.valueOf(TimeUnit.MILLISECONDS.convert(0, TimeUnit.MINUTES))
                 };
-                String sortOrder = MediaStore.Video.Media.DISPLAY_NAME + " ASC";;
+                String sortOrder = MediaStore.Video.Media.DISPLAY_NAME + " ASC";
+                ;
 
                 Cursor cursor = getContext().getContentResolver().query(
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         projection,
                         selection,
                         selectionArgs,
@@ -130,7 +137,7 @@ public class AllsongsFragment extends Fragment {
                     String author = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.AUTHOR));
                     long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
                     String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.RELATIVE_PATH));
-                    mMusicList.add(new Music(name,author,duration,path));
+                    mMusicList.add(new Music(name, author, duration, path));
                 }
             }
         } catch (Exception e) {
@@ -141,17 +148,16 @@ public class AllsongsFragment extends Fragment {
 
     //Lấy file .mp3 tr máy
     private void getFileMusic(File file) {
-        if(Build.VERSION.SDK_INT<Build.VERSION_CODES.Q) {
-            File[] files = file.listFiles();
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    getFileMusic(f);
-                } else {
-                    if (f.getName().endsWith(".mp3")) {
-                        mFile.add(f);
-                    }
+        File[] files = file.listFiles();
+        for (File f : files) {
+            if (f.isDirectory()) {
+                getFileMusic(f);
+            } else {
+                if (f.getName().endsWith(".mp3")) {
+                    mFile.add(f);
                 }
             }
         }
+
     }
 }

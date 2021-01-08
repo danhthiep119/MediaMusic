@@ -16,23 +16,28 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bkav.mediamusic.IChangeFragment;
 import com.bkav.mediamusic.IGetPlayMusic;
 import com.bkav.mediamusic.R;
 import com.bkav.mediamusic.model.Music;
 import com.bkav.mediamusic.service.MediaPlaybackService;
+import com.bkav.mediamusic.view.fragment.AllsongsFragment;
 import com.bkav.mediamusic.view.fragment.BottomSheetFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListMusicAdapter extends RecyclerView.Adapter<ListMusicAdapter.ViewHolder> implements IGetPlayMusic {
+public class ListMusicAdapter extends RecyclerView.Adapter<ListMusicAdapter.ViewHolder>{
     private List<Music> mMusicList = new ArrayList<>();
     private Context mContext;
+    public IGetData mDataListener;
 
     public ListMusicAdapter(Context mContext, List<Music> mMusicList) {
         this.mContext = mContext;
         this.mMusicList = mMusicList;
+        mDataListener = (IGetData) mContext;
     }
+
 
     @NonNull
     @Override
@@ -49,7 +54,8 @@ public class ListMusicAdapter extends RecyclerView.Adapter<ListMusicAdapter.View
             @Override
             public void onClick(View view) {
 //                System.out.println("has been click at "+position+"position");
-                getData(mContext,mMusicList.get(position));
+//                getData(mContext,mMusicList.get(position));
+                mDataListener.getData(mMusicList.get(position));
                 Intent intent = new Intent(mContext, MediaPlaybackService.class);
                 intent.putExtra("path",mMusicList.get(position).getPath());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -66,10 +72,6 @@ public class ListMusicAdapter extends RecyclerView.Adapter<ListMusicAdapter.View
         return mMusicList.isEmpty() ? 0 : mMusicList.size();
     }
 
-    @Override
-    public void getData(Context mContext, Music mMusic) {
-
-    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private Button btnStatus;
@@ -101,4 +103,7 @@ public class ListMusicAdapter extends RecyclerView.Adapter<ListMusicAdapter.View
         return finalTimerString;
     }
 
+    public interface IGetData{
+        void getData(Music mMusic);
+    }
 }

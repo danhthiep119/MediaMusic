@@ -1,5 +1,6 @@
 package com.bkav.mediamusic.service;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -27,7 +28,7 @@ import java.io.IOException;
 public class MediaPlaybackService extends Service {
     private String CHANNEL_ID = "";
     private MediaPlayer mp = new MediaPlayer();
-    private NotificationManagerCompat mNotificationManager;
+    private NotificationManager mNotificationManager;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -54,7 +55,7 @@ public class MediaPlaybackService extends Service {
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         notificationIntent.putExtra("path", path);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mNotificationManager = NotificationManagerCompat.from(this);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             CHANNEL_ID = createNotificationChannel("my_notification","mediaplaybackservice");
         }
@@ -63,14 +64,16 @@ public class MediaPlaybackService extends Service {
         }
         RemoteViews mCustomNotification =  new RemoteViews(getPackageName(), R.layout.playmusic_notification);
         RemoteViews mCusomNotificationBigSize = new RemoteViews(getPackageName(),R.layout.playmusicbigsize_notification);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        @SuppressLint("WrongConstant") Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Music Playing")
+                .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setSmallIcon(R.drawable.ic_baseline_music_note_24)
-                .setCustomContentView(mCustomNotification)
-                .setCustomBigContentView(mCusomNotificationBigSize)
+//                .setCustomContentView(mCustomNotification)
+//                .setCustomBigContentView(mCusomNotificationBigSize)
                 .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
                 .build();
-        mNotificationManager.notify(123, notification);
+        startForeground(123, notification);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
