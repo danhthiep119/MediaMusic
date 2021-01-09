@@ -32,7 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class AllsongsFragment extends Fragment {
+public class AllsongsFragment extends Fragment implements ListMusicAdapter.IGetData {
     private RecyclerView lvListMusic;
     private List<Music> mMusicList = new ArrayList<>();
     private List<File> mFile = new ArrayList<>();
@@ -112,9 +112,9 @@ public class AllsongsFragment extends Fragment {
                         MediaStore.Audio.Media.AUTHOR,
                         MediaStore.Audio.Media.DISPLAY_NAME,
                         MediaStore.Audio.Media.DURATION,
-                        MediaStore.Audio.Media.RELATIVE_PATH
+                        MediaStore.Audio.Media.DATA
                 };
-                String selection = MediaStore.Video.Media.DURATION +
+                String selection = MediaStore.Audio.Media.DURATION +
                         " >= ?";
                 String[] selectionArgs = new String[]{
                         String.valueOf(TimeUnit.MILLISECONDS.convert(0, TimeUnit.MINUTES))
@@ -133,10 +133,10 @@ public class AllsongsFragment extends Fragment {
                 while (cursor.moveToNext()) {
                     // Use an ID column from the projection to get
                     // a URI representing the media item itself.
-                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME));
-                    String author = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.AUTHOR));
-                    long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
-                    String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.RELATIVE_PATH));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
+                    String author = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.AUTHOR));
+                    long duration = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+                    String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
                     mMusicList.add(new Music(name, author, duration, path));
                 }
             }
@@ -158,6 +158,11 @@ public class AllsongsFragment extends Fragment {
                 }
             }
         }
+
+    }
+
+    @Override
+    public void getData(Music mMusic) {
 
     }
 }

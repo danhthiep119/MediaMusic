@@ -38,6 +38,7 @@ public class MediaPlaybackService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String path = intent.getStringExtra("path");
+        String name = intent.getStringExtra("name");
         try {
             mp.reset();
             mp.setDataSource(path);
@@ -46,11 +47,11 @@ public class MediaPlaybackService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        showNotification(path);
+        showNotification(path,name);
         return START_NOT_STICKY;
     }
 
-    private void showNotification(String path) {
+    private void showNotification(String path,String name) {
         Intent notificationIntent = new Intent(this, MediaPlaybackFragment.class);
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         notificationIntent.putExtra("path", path);
@@ -66,6 +67,7 @@ public class MediaPlaybackService extends Service {
         RemoteViews mCusomNotificationBigSize = new RemoteViews(getPackageName(),R.layout.playmusicbigsize_notification);
         @SuppressLint("WrongConstant") Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Music Playing")
+                .setContentText(name)
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setSmallIcon(R.drawable.ic_baseline_music_note_24)
 //                .setCustomContentView(mCustomNotification)

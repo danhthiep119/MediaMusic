@@ -53,7 +53,6 @@
                     />
             </LinearLayout>
             <ImageButton
-                android:id="@+id/btnPlayBottom"
                 android:layout_margin="5dp"
                 android:background="@color/white"
                 android:layout_width="match_parent"

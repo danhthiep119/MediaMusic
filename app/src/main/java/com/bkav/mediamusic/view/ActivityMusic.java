@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -33,13 +34,12 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class ActivityMusic extends AppCompatActivity implements ListMusicAdapter.IGetData {
     private final int REQUEST_CODE = 1;
-//    private LinearLayout mLayoutBottomSheet;
-//    private BottomSheetBehavior mBottomSheetBehavior;
     private TextView txtNameBottom,txtAuthorBottom;
     private CardView cvInfomation;
     private ImageButton btnPlay;
     private boolean isPlay = false;
     private Music mMusic;
+    private MediaPlaybackFragment mediaPlaybackFragment = new MediaPlaybackFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,17 +47,20 @@ public class ActivityMusic extends AppCompatActivity implements ListMusicAdapter
         requestPermissions();
         getSupportFragmentManager().beginTransaction().add(R.id.container, new AllsongsFragment()).commit();
         addControls();
+        addEvents();
+
+    }
+
+    private void addEvents() {
+
     }
 
 
     private void addControls() {
-//        mLayoutBottomSheet = findViewById(R.id.bottom_sheet_layout);
-//        mBottomSheetBehavior = BottomSheetBehavior.from(mLayoutBottomSheet);
         txtNameBottom = findViewById(R.id.txtNameBottom);
         txtAuthorBottom = findViewById(R.id.txtAuthorBottom);
-        cvInfomation = findViewById(R.id.cvInfomation);
         btnPlay = findViewById(R.id.btnPlayBottom);
-        cvInfomation = findViewById(R.id.cvInfomation);
+        cvInfomation = findViewById(R.id.cvBottom);
         txtNameBottom.setText("");
     }
 
@@ -101,7 +104,8 @@ public class ActivityMusic extends AppCompatActivity implements ListMusicAdapter
         cvInfomation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, new MediaPlaybackFragment()).commit();
+                mediaPlaybackFragment.getInformation(mMusic.getName());
+                getSupportFragmentManager().beginTransaction().add(R.id.container, mediaPlaybackFragment).commit();
             }
         });
     }

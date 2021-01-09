@@ -58,6 +58,7 @@ public class ListMusicAdapter extends RecyclerView.Adapter<ListMusicAdapter.View
                 mDataListener.getData(mMusicList.get(position));
                 Intent intent = new Intent(mContext, MediaPlaybackService.class);
                 intent.putExtra("path",mMusicList.get(position).getPath());
+                intent.putExtra("name",mMusicList.get(position).getName());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     mContext.startService(intent);
                     holder.txtName.setTypeface(Typeface.DEFAULT_BOLD);
